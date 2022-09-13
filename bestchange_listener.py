@@ -48,5 +48,5 @@ def get_cots():
                                     'get': k['get'],
                                 }
                             )
-    lst_temp.sort(key=lambda x: x[2])
+    lst_temp.sort(key=lambda x: -x['spread_abs'])
     return lst_temp
