@@ -146,4 +146,7 @@ async def echo(message: types.Message):
 
 if __name__ == '__main__':
     start_listening()
-    main()
+    try:
+        main()
+    except:
+        pass

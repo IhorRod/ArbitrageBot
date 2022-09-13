@@ -28,16 +28,18 @@ def get_cots():
                     reviews = str(k['reviews']).split('.')
                     if int(reviews[0]) <= parameters['max_bad'] and int(reviews[1]) >= parameters[
                         'min_good'] and not check:
-                        diff = calculate(float(k['give']), float(k['get']), i, j)
-                        #print(i, j, diff)
+
+                        abs_diff = calculate(float(k['give']), float(k['get']), i, j)
+                        diff = ((abs_diff/float(parameters['value']))-1)*100
+                        print(i, j, diff, abs_diff)
                         if diff >= parameters['min_spread']:
                             check = True
                             lst_temp.append(
                                 {
                                     'from': i[:-4],
                                     'to': j[:-4],
-                                    'spread_abs': diff,
-                                    'spread_proc': (diff/float(parameters['value']))-1,
+                                    'spread_abs': abs_diff,
+                                    'spread_proc': diff,
                                     'link': "https://www.bestchange.ru/click.php?id={}&from={}&to={}&city=0"
                                     .format(k["exchange_id"], k["give_id"], k["get_id"]),
                                     'buy': quotes[i][1],
