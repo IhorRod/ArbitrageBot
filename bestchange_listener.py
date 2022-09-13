@@ -29,8 +29,8 @@ def get_cots():
                     if int(reviews[0]) <= parameters['max_bad'] and int(reviews[1]) >= parameters[
                         'min_good'] and not check:
 
-                        abs_diff = calculate(float(k['give']), float(k['get']), i, j)
-                        diff = ((abs_diff/float(parameters['value']))-1)*100
+                        abs_diff = round(calculate(float(k['give']), float(k['get']), i, j), 2)
+                        diff = round(((abs_diff/float(parameters['value']))-1)*100, 1)
                         #print(i, j, diff, abs_diff)
                         if diff >= parameters['min_spread']:
                             check = True
