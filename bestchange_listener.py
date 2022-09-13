@@ -31,7 +31,7 @@ def get_cots():
 
                         abs_diff = calculate(float(k['give']), float(k['get']), i, j)
                         diff = ((abs_diff/float(parameters['value']))-1)*100
-                        print(i, j, diff, abs_diff)
+                        #print(i, j, diff, abs_diff)
                         if diff >= parameters['min_spread']:
                             check = True
                             lst_temp.append(
