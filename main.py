@@ -68,13 +68,32 @@ async def parameters_get(message: types.Message):
 
 @dp.message_handler(Text(equals="Обновить🔃"))
 async def update_get(message: types.Message):
-    text = ""
+    await message.answer("Начинаю поиск связок, это займет около минуты")
+    text = "Поиск завершен 😁"
+    text_quote = "1. USDT->{}\n" \
+                 "Покупка по маркету за: {}\n" \
+                 "2. {}->{}\n" \
+                 "Курс обмена: {} {} на {} {}\n" \
+                 "Ссылка на обменник: {}\n" \
+                 "3. {}->USDT\n" \
+                 "Продажа по маркету: {}\n\n" \
+                 "Итоговая сумма: {} USDT\n" \
+                 "Процентный спред: {}%"
+
     cotirs = get_cots()
-    if len(cotirs)==0:
-        text = "Не найдены связки"
+    if len(cotirs) == 0:
+        text = "Не найдены связки 😥"
     else:
         for i in cotirs:
-            text+= "{}->{}: {}\n".format(i[0], i[1], i[2])
+            await message.answer(text_quote.format(
+                i['from'], i['buy'],
+                i['from'], i['to'],
+                i['give'], i['from'], i['get'], i['to'],
+                i['link'],
+                i['to'], i['sell'],
+                i['spread_abs'], i['spread_proc']
+            ))
+
     await message.answer(text)
 
 

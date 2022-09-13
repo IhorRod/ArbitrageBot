@@ -8,7 +8,7 @@ import math
 def calculate(give: float, get: float, from_cot: str, to_cot: str):
     value = float(parameters['value'])
     value1 = (value/quotes[from_cot][1]/give)*get*quotes[to_cot][2]
-    return (value1-value)/value*100
+    return value1
 
 def get_cots():
     print("start")
@@ -21,7 +21,7 @@ def get_cots():
             if i != j and quotes[i][1] != 0 and quotes[j][1] != 0:
                 cots = api.rates().filter(
                     quotes[i][0],
-                    quotes[i][0]
+                    quotes[j][0]
                 )
                 check = False
                 for k in cots:
@@ -29,10 +29,22 @@ def get_cots():
                     if int(reviews[0]) <= parameters['max_bad'] and int(reviews[1]) >= parameters[
                         'min_good'] and not check:
                         diff = calculate(float(k['give']), float(k['get']), i, j)
-                        print(i, j, diff)
+                        #print(i, j, diff)
                         if diff >= parameters['min_spread']:
                             check = True
                             lst_temp.append(
-                                (i[:-4], j[:-4], diff)
+                                {
+                                    'from': i[:-4],
+                                    'to': j[:-4],
+                                    'spread_abs': diff,
+                                    'spread_proc': (diff/float(parameters['value']))-1,
+                                    'link': "https://www.bestchange.ru/click.php?id={}&from={}&to={}&city=0"
+                                    .format(k["exchange_id"], k["give_id"], k["get_id"]),
+                                    'buy': quotes[i][1],
+                                    'sell': quotes[j][2],
+                                    'give': k['give'],
+                                    'get': k['get'],
+                                }
                             )
+    lst_temp.sort(key=lambda x: x[2])
     return lst_temp
