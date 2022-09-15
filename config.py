@@ -6,6 +6,9 @@ parameters = {
     "max_bad": 0
 }
 
+exchangers_black = {}
+quotes_black = []
+
 quotes = {
     "LUNAUSDT": (2, 0, 0),
     "OMGUSDT": (48, 0, 0),

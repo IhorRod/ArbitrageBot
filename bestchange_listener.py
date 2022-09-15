@@ -18,7 +18,11 @@ def get_cots():
     lst_temp = []
     for i in quotes:
         for j in quotes:
-            if i != j and quotes[i][1] != 0 and quotes[j][1] != 0:
+            if i != j \
+                    and quotes[i][1] != 0 \
+                    and quotes[j][1] != 0 \
+                    and i not in quotes_black\
+                    and j not in quotes_black:
                 cots = api.rates().filter(
                     quotes[i][0],
                     quotes[j][0]
@@ -26,8 +30,10 @@ def get_cots():
                 check = False
                 for k in cots:
                     reviews = str(k['reviews']).split('.')
-                    if int(reviews[0]) <= parameters['max_bad'] and int(reviews[1]) >= parameters[
-                        'min_good'] and not check:
+                    if int(reviews[0]) <= parameters['max_bad'] \
+                            and int(reviews[1]) >= parameters['min_good'] \
+                            and not check\
+                            and k['exchange_id'] not in exchangers_black:
 
                         abs_diff = round(calculate(float(k['give']), float(k['get']), i, j), 2)
                         diff = round(((abs_diff/float(parameters['value']))-1)*100, 1)

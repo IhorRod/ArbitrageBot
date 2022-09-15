@@ -1,3 +1,6 @@
+import json
+import time
+
 from aiogram.dispatcher.filters import Text
 from bestchange_api import BestChange
 
@@ -23,33 +26,128 @@ async def start(message: types.Message):
                          reply_markup=keyboard_main)
 
 
+@dp.callback_query_handler(lambda c: c.data == "add_exchanger")
+async def process_addexchanger(callback_query: types.CallbackQuery):
+    state = dp.current_state(chat=callback_query.message.chat.id, user=callback_query.from_user.id)
+    await bot.send_message(callback_query.from_user.id,
+                           text="Введите ID обменника, который хотите убрать из ЧС:",
+                           reply_markup=keyboard_cancel)
+    await state.set_state(StatesChange.STATE_ADD_EXCHANGER)
+    await callback_query.message.delete()
+
+
+@dp.callback_query_handler(lambda c: c.data == "diff_exchanger")
+async def process_diffexchanger(callback_query: types.CallbackQuery):
+    state = dp.current_state(chat=callback_query.message.chat.id, user=callback_query.from_user.id)
+    await bot.send_message(callback_query.from_user.id,
+                           text="Введите название обменника, который хотите добавить в ЧС:",
+                           reply_markup=keyboard_cancel)
+    await state.set_state(StatesChange.STATE_DIFF_EXCHANGER)
+    await callback_query.message.delete()
+
+
+@dp.callback_query_handler(lambda c: c.data == "add_quotes")
+async def process_addquotes(callback_query: types.CallbackQuery):
+    state = dp.current_state(chat=callback_query.message.chat.id, user=callback_query.from_user.id)
+    await bot.send_message(callback_query.from_user.id,
+                           text="Введите название криптовалюты, которую хотите убрать из ЧС:",
+                           reply_markup=keyboard_cancel)
+    await state.set_state(StatesChange.STATE_ADD_QUOTE)
+    await callback_query.message.delete()
+
+
+@dp.callback_query_handler(lambda c: c.data == "diff_quotes")
+async def process_diffquotes(callback_query: types.CallbackQuery):
+    state = dp.current_state(chat=callback_query.message.chat.id, user=callback_query.from_user.id)
+    await bot.send_message(callback_query.from_user.id,
+                           text="Введите название криптовалюты, которую хотите добавить в ЧС:",
+                           reply_markup=keyboard_cancel)
+    await state.set_state(StatesChange.STATE_DIFF_QUOTE)
+    await callback_query.message.delete()
+
+
 @dp.callback_query_handler(lambda c: c.data and c.data.startswith('change'))
 async def process_change(callback_query: types.CallbackQuery):
     regime = callback_query.data[7:]
     state = dp.current_state(chat=callback_query.message.chat.id, user=callback_query.from_user.id)
     if regime == "value":
         await bot.send_message(callback_query.from_user.id,
-                               text="Введите новую рабочую сумму:")
+                               text="Введите новую рабочую сумму:",
+                               reply_markup=keyboard_cancel)
         await state.set_state(StatesChange.STATE_VALUE)
 
     if regime == "min_spread":
         await bot.send_message(callback_query.from_user.id,
-                               text="Введите новую минимальную доходность:")
+                               text="Введите новую минимальную доходность:",
+                               reply_markup=keyboard_cancel)
         await state.set_state(StatesChange.STATE_SPREAD)
     if regime == "min_good":
         await bot.send_message(callback_query.from_user.id,
-                               text="Введите новое количество минимально хороших комментариев:")
+                               text="Введите новое количество минимально хороших комментариев:",
+                               reply_markup=keyboard_cancel)
         await state.set_state(StatesChange.STATE_MIN_GOOD)
     if regime == "max_bad":
         await bot.send_message(callback_query.from_user.id,
-                               text="Введите максимальное количество плохих комментариев:")
+                               text="Введите максимальное количество плохих комментариев:",
+                               reply_markup=keyboard_cancel)
         await state.set_state(StatesChange.STATE_MAX_BAD)
     await callback_query.message.delete()
+
+
+@dp.callback_query_handler(lambda c: c.data == "add_exchanger", state=StatesChange.STATE_EMPTY)
+async def process_addexchanger1(callback_query: types.CallbackQuery):
+    await process_addexchanger(callback_query)
+
+
+@dp.callback_query_handler(lambda c: c.data == "diff_exchanger", state=StatesChange.STATE_EMPTY)
+async def process_diffexchanger1(callback_query: types.CallbackQuery):
+    await process_diffexchanger(callback_query)
+
+
+@dp.callback_query_handler(lambda c: c.data == "add_quotes", state=StatesChange.STATE_EMPTY)
+async def process_addquotes1(callback_query: types.CallbackQuery):
+    await process_addquotes(callback_query)
+
+
+@dp.callback_query_handler(lambda c: c.data == "diff_quotes", state=StatesChange.STATE_EMPTY)
+async def process_diffquotes1(callback_query: types.CallbackQuery):
+    await process_diffquotes(callback_query)
 
 
 @dp.callback_query_handler(lambda c: c.data and c.data.startswith('change'), state=StatesChange.STATE_EMPTY)
 async def process_change1(callback_query: types.CallbackQuery):
     await process_change(callback_query)
+
+
+@dp.message_handler(Text(equals="Включить постоянное обновление📖"))
+async def all_updater(message: types.Message):
+    text = "Бот начинает работу по поиску связок, поиск производится примерно раз в минуту\n" \
+           "Изменять настройки можно прямо во время работы бота, они сразу же применяются.\n" \
+           "Удачи в поиске связок!"
+    await message.answer(text)
+    text_quote = "1. USDT->{}\n" \
+                 "Покупка по маркету за: {}\n" \
+                 "2. {}->{}\n" \
+                 "Курс обмена: {} {} на {} {}\n" \
+                 "Ссылка на обменник: {}\n" \
+                 "3. {}->USDT\n" \
+                 "Продажа по маркету: {}\n\n" \
+                 "Итоговая сумма: {} USDT\n" \
+                 "Процентный спред: {}%"
+    while True:
+        cotirs = get_cots()
+        if len(cotirs) != 0:
+            for i in cotirs:
+                await message.answer(
+                    text_quote.format(
+                    i['from'], i['buy'],
+                    i['from'], i['to'],
+                    i['give'], i['from'], i['get'], i['to'],
+                    i['link'],
+                    i['to'], i['sell'],
+                    i['spread_abs'], i['spread_proc']
+                ))
+        time.sleep(60)
 
 
 @dp.message_handler(Text(equals="Настройки⚙️"))
@@ -97,9 +195,53 @@ async def update_get(message: types.Message):
     await message.answer(text)
 
 
+@dp.message_handler(Text(equals="Черный список валют💰️"))
+async def quotes_change(message: types.Message):
+    temp_text = "Доступные сейчас валюты к работе:\n"
+    for i in quotes.keys():
+        if i not in quotes_black:
+            temp_text += "{}, ".format(i[:-4])
+    temp_text = temp_text[:-2] + "\nЧерный список: \n"
+    for i in quotes_black:
+        temp_text += "{}, ".format(i[:-4])
+    temp_text = temp_text[:-2]
+    await message.answer(temp_text, reply_markup=keyboard_inline_quoteschange)
+
+
+@dp.message_handler(Text(equals="Отменить❌"), state='*')
+async def cancel_operation(message: types.Message):
+    state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+    await state.set_state(StatesChange.STATE_EMPTY)
+    await message.answer("Операция отменена", reply_markup=keyboard_main)
+
+
+@dp.message_handler(Text(equals="Черный список обменников💱"))
+async def exchangers_change(message: types.Message):
+    temp_text = "Обменники в черном списке:\n" \
+                "Название - ID\n"
+    for i in exchangers_black:
+        temp_text += "{} - {}\n".format(exchangers_black[i], i)
+    await message.answer(temp_text, reply_markup=keyboard_inline_exchangerschange)
+
+
+@dp.message_handler(Text(equals="Включить постоянное обновление📖"), state=StatesChange.STATE_EMPTY)
+async def all_updater1(message: types.Message):
+    await all_updater(message)
+
+
 @dp.message_handler(Text(equals="Настройки⚙️"), state=StatesChange.STATE_EMPTY)
 async def parameters_get1(message: types.Message):
     await parameters_get(message)
+
+
+@dp.message_handler(Text(equals="Черный список валют💰️"), state=StatesChange.STATE_EMPTY)
+async def quotes_change1(message: types.Message):
+    await quotes_change(message)
+
+
+@dp.message_handler(Text(equals="Черный список обменников💱"), state=StatesChange.STATE_EMPTY)
+async def exchangers_change1(message: types.Message):
+    await exchangers_change(message)
 
 
 @dp.message_handler(Text(equals="Обновить🔃"), state=StatesChange.STATE_EMPTY)
@@ -112,6 +254,8 @@ async def process_value_change(message: types.Message):
     parameters["value"] = int(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
     await state.set_state(StatesChange.STATE_EMPTY)
+    await message.answer("Изменено рабочее количество валюты",
+                         reply_markup=keyboard_main)
     await parameters_get(message)
 
 
@@ -120,6 +264,8 @@ async def process_value_change(message: types.Message):
     parameters["min_spread"] = float(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
     await state.set_state(StatesChange.STATE_EMPTY)
+    await message.answer("Изменен требуемый минимальный спред",
+                         reply_markup=keyboard_main)
     await parameters_get(message)
 
 
@@ -128,6 +274,8 @@ async def process_value_change(message: types.Message):
     parameters["min_good"] = int(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
     await state.set_state(StatesChange.STATE_EMPTY)
+    await message.answer("Изменено минимальное количество хороших комментариев",
+                         reply_markup=keyboard_main)
     await parameters_get(message)
 
 
@@ -136,7 +284,69 @@ async def process_value_change(message: types.Message):
     parameters["max_bad"] = int(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
     await state.set_state(StatesChange.STATE_EMPTY)
+    await message.answer("Изменено максимальное количество плохих комментариев",
+                         reply_markup=keyboard_main)
     await parameters_get(message)
+
+
+@dp.message_handler(state=StatesChange.STATE_ADD_QUOTE)
+async def process_addquote_read(message: types.Message):
+    quote = message.text + "USDT"
+    if quote in quotes_black:
+        quotes_black.remove(quote)
+        await message.answer("Криптовалюта {} убрана из ЧС".format(message.text), reply_markup=keyboard_main)
+        state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+        await state.set_state(StatesChange.STATE_EMPTY)
+        await quotes_change(message)
+    else:
+        await message.answer("Нет криптовалюты {} в ЧС".format(message.text))
+
+
+@dp.message_handler(state=StatesChange.STATE_DIFF_QUOTE)
+async def process_diffquote_read(message: types.Message):
+    quote = message.text + "USDT"
+    if quote in quotes:
+        if quote not in quotes_black:
+            quotes_black.append(quote)
+            await message.answer("Криптовалюта {} добавлена в ЧС".format(message.text), reply_markup=keyboard_main)
+            state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+            await state.set_state(StatesChange.STATE_EMPTY)
+            await quotes_change(message)
+        else:
+            await message.answer("Криптовалюта {} уже в ЧС".format(message.text))
+    else:
+        await message.answer("Нет криптовалюты {} в доступных".format(message.text))
+
+
+@dp.message_handler(state=StatesChange.STATE_ADD_EXCHANGER)
+async def process_addquote_read(message: types.Message):
+    exchanger = int(message.text)
+    if exchanger in exchangers_black:
+        exchangers_black.pop(exchanger)
+        await message.answer("Обменник {} убран из ЧС".format(exchanger), reply_markup=keyboard_main)
+        state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+        await state.set_state(StatesChange.STATE_EMPTY)
+        await exchangers_change(message)
+    else:
+        await message.answer("Нет обменника {} в ЧС".format(exchanger))
+
+
+@dp.message_handler(state=StatesChange.STATE_DIFF_EXCHANGER)
+async def process_diffquote_read(message: types.Message):
+    with open("exchangers.json", "r") as read_file:
+        data: dict = json.load(read_file)
+    exchanger = message.text
+    if data.get(exchanger) != -1:
+        if data[exchanger] not in exchangers_black:
+            exchangers_black[data[exchanger]] = exchanger
+            await message.answer("Обменник {} добавлен в ЧС".format(exchanger), reply_markup=keyboard_main)
+            state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+            await state.set_state(StatesChange.STATE_EMPTY)
+            await exchangers_change(message)
+        else:
+            await message.answer("Обменник {} уже в ЧС".format(exchanger))
+    else:
+        await message.answer("Нет обменника {} в доступных".format(exchanger))
 
 
 @dp.message_handler(state=StatesChange.STATE_EMPTY)
@@ -146,7 +356,17 @@ async def echo(message: types.Message):
 
 if __name__ == '__main__':
     start_listening()
-    try:
-        main()
-    except:
-        pass
+    main()
+
+'''
+print("Start")
+    api = BestChange()
+    print("Finish")
+    temp_dict = {}
+    exchangers = api.exchangers().get()
+    for i in exchangers:
+        data = exchangers[i]
+        temp_dict[data['name']] = data['id']
+    with open("exchangers.json", 'w') as f:
+        json.dump(temp_dict, f)
+'''
