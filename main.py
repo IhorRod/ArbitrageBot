@@ -1,23 +1,56 @@
+import asyncio
+import asyncbg
+import trio
 import json
 import time
 
 from aiogram.dispatcher.filters import Text
 from bestchange_api import BestChange
 
-from bestchange_listener import get_cots
+from bestchange_listener import get_cots, run_bestchange
 from config import *
 from aiogram import Bot, Dispatcher, executor, types
 from binance_connect import start_listening
 from keyboards import *
 from States import StatesChange
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
+import config
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
 
 
+async def update(id) -> int:
+    text_quote = "1. USDT->{}\n" \
+                 "Покупка по маркету за: {}\n" \
+                 "2. {}->{}\n" \
+                 "Курс обмена: {} {} на {} {}\n" \
+                 "Ссылка на обменник: {}\n" \
+                 "3. {}->USDT\n" \
+                 "Продажа по маркету: {}\n\n" \
+                 "Итоговая сумма: {} USDT\n" \
+                 "Процентный спред: {}%"
+    if len(list_bestchange) != 0:
+        for i in list_bestchange:
+            await bot.send_message(id,
+                                   text=text_quote.format(
+                                       i['from'], i['buy'],
+                                       i['from'], i['to'],
+                                       i['give'], i['from'], i['get'], i['to'],
+                                       i['link'],
+                                       i['to'], i['sell'],
+                                       i['spread_abs'], i['spread_proc']))
+    return len(list_bestchange)
+
+
+async def updates(id):
+    while True:
+        await update(id)
+        await asyncio.sleep(60)
+
+
 def main():
-    executor.start_polling(dp)
+    executor.start_polling(dp, skip_updates=True)
 
 
 @dp.message_handler(commands=["start"])
@@ -124,30 +157,8 @@ async def all_updater(message: types.Message):
     text = "Бот начинает работу по поиску связок, поиск производится примерно раз в минуту\n" \
            "Изменять настройки можно прямо во время работы бота, они сразу же применяются.\n" \
            "Удачи в поиске связок!"
-    await message.answer(text)
-    text_quote = "1. USDT->{}\n" \
-                 "Покупка по маркету за: {}\n" \
-                 "2. {}->{}\n" \
-                 "Курс обмена: {} {} на {} {}\n" \
-                 "Ссылка на обменник: {}\n" \
-                 "3. {}->USDT\n" \
-                 "Продажа по маркету: {}\n\n" \
-                 "Итоговая сумма: {} USDT\n" \
-                 "Процентный спред: {}%"
-    while True:
-        cotirs = get_cots()
-        if len(cotirs) != 0:
-            for i in cotirs:
-                await message.answer(
-                    text_quote.format(
-                    i['from'], i['buy'],
-                    i['from'], i['to'],
-                    i['give'], i['from'], i['get'], i['to'],
-                    i['link'],
-                    i['to'], i['sell'],
-                    i['spread_abs'], i['spread_proc']
-                ))
-        time.sleep(60)
+    await message.answer(text=text)
+    asyncio.Task(updates(message.chat.id))
 
 
 @dp.message_handler(Text(equals="Настройки⚙️"))
@@ -166,33 +177,10 @@ async def parameters_get(message: types.Message):
 
 @dp.message_handler(Text(equals="Обновить🔃"))
 async def update_get(message: types.Message):
-    await message.answer("Начинаю поиск связок, это займет около минуты")
-    text = "Поиск завершен 😁"
-    text_quote = "1. USDT->{}\n" \
-                 "Покупка по маркету за: {}\n" \
-                 "2. {}->{}\n" \
-                 "Курс обмена: {} {} на {} {}\n" \
-                 "Ссылка на обменник: {}\n" \
-                 "3. {}->USDT\n" \
-                 "Продажа по маркету: {}\n\n" \
-                 "Итоговая сумма: {} USDT\n" \
-                 "Процентный спред: {}%"
-
-    cotirs = get_cots()
-    if len(cotirs) == 0:
-        text = "Не найдены связки 😥"
-    else:
-        for i in cotirs:
-            await message.answer(text_quote.format(
-                i['from'], i['buy'],
-                i['from'], i['to'],
-                i['give'], i['from'], i['get'], i['to'],
-                i['link'],
-                i['to'], i['sell'],
-                i['spread_abs'], i['spread_proc']
-            ))
-
-    await message.answer(text)
+    await message.answer("Начинается поиск связок!")
+    num = await update(message.chat.id)
+    if num == 0:
+        await message.answer("Связки не найдены")
 
 
 @dp.message_handler(Text(equals="Черный список валют💰️"))
@@ -355,6 +343,7 @@ async def echo(message: types.Message):
 
 
 if __name__ == '__main__':
+    run_bestchange()
     start_listening()
     main()
 

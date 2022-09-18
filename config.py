@@ -6,6 +6,7 @@ parameters = {
     "max_bad": 0
 }
 
+list_bestchange = []
 exchangers_black = {}
 quotes_black = []
 

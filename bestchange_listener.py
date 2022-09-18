@@ -1,27 +1,41 @@
+import asyncio
 import time
-
+import config
 from config import *
 from bestchange_api import BestChange
 import math
+import asyncbg
 
+def run_bestchange():
+    asyncio.Task(run_bestchange1())
+
+async def run_bestchange1():
+    await asyncbg.call(update_cots)
 
 def calculate(give: float, get: float, from_cot: str, to_cot: str):
     value = float(parameters['value'])
-    value1 = (value/quotes[from_cot][1]/give)*get*quotes[to_cot][2]
+    value1 = (value / quotes[from_cot][1] / give) * get * quotes[to_cot][2]
     return value1
+
+
+def update_cots():
+    while True:
+        config.list_bestchange = get_cots()
+        time.sleep(60)
+
 
 def get_cots():
     print("start")
     start_time = time.time()
     api = BestChange()
-    print("finish in", time.time()-start_time)
+    print("finish in", time.time() - start_time)
     lst_temp = []
     for i in quotes:
         for j in quotes:
             if i != j \
                     and quotes[i][1] != 0 \
                     and quotes[j][1] != 0 \
-                    and i not in quotes_black\
+                    and i not in quotes_black \
                     and j not in quotes_black:
                 cots = api.rates().filter(
                     quotes[i][0],
@@ -32,12 +46,12 @@ def get_cots():
                     reviews = str(k['reviews']).split('.')
                     if int(reviews[0]) <= parameters['max_bad'] \
                             and int(reviews[1]) >= parameters['min_good'] \
-                            and not check\
+                            and not check \
                             and k['exchange_id'] not in exchangers_black:
 
                         abs_diff = round(calculate(float(k['give']), float(k['get']), i, j), 2)
-                        diff = round(((abs_diff/float(parameters['value']))-1)*100, 1)
-                        #print(i, j, diff, abs_diff)
+                        diff = round(((abs_diff / float(parameters['value'])) - 1) * 100, 1)
+                        # print(i, j, diff, abs_diff)
                         if diff >= parameters['min_spread']:
                             check = True
                             lst_temp.append(
