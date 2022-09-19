@@ -1,4 +1,5 @@
-API_TOKEN = "5779105062:AAE0g_K0Cnba2CBO6kkpB1mAS9Rt1xoBRSI"
+import os
+API_TOKEN = os.environ.get("api_token")
 parameters = {
     "value": 1000,
     "min_spread": 0.5,
