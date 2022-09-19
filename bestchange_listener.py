@@ -6,21 +6,27 @@ from bestchange_api import BestChange
 import math
 import asyncbg
 
+
 def run_bestchange():
     asyncio.Task(run_bestchange1())
 
+
 async def run_bestchange1():
-    await asyncbg.call(update_cots)
+    await asyncio.get_event_loop().run_in_executor(None, update_cots)
+
 
 def calculate(give: float, get: float, from_cot: str, to_cot: str):
     value = float(parameters['value'])
-    value1 = (value / quotes[from_cot][1] / give) * get * quotes[to_cot][2]
-    return value1
+    volume_from = value / quotes[from_cot][1]
+    volume_to = (volume_from / give) * get
+    value1 = volume_to * quotes[to_cot][2]
+    return value1, volume_from, volume_to
 
 
 def update_cots():
     while True:
         config.list_bestchange = get_cots()
+        print(config.list_bestchange)
         time.sleep(60)
 
 
@@ -32,11 +38,13 @@ def get_cots():
     lst_temp = []
     for i in quotes:
         for j in quotes:
+            print("SMTH")
             if i != j \
                     and quotes[i][1] != 0 \
                     and quotes[j][1] != 0 \
                     and i not in quotes_black \
                     and j not in quotes_black:
+
                 cots = api.rates().filter(
                     quotes[i][0],
                     quotes[j][0]
@@ -49,7 +57,9 @@ def get_cots():
                             and not check \
                             and k['exchange_id'] not in exchangers_black:
 
-                        abs_diff = round(calculate(float(k['give']), float(k['get']), i, j), 2)
+                        temp_calc = calculate(float(k['give']), float(k['get']), i, j)
+
+                        abs_diff = round(temp_calc[0], 2)
                         diff = round(((abs_diff / float(parameters['value'])) - 1) * 100, 1)
                         # print(i, j, diff, abs_diff)
                         if diff >= parameters['min_spread']:
@@ -66,6 +76,8 @@ def get_cots():
                                     'sell': quotes[j][2],
                                     'give': k['give'],
                                     'get': k['get'],
+                                    'from_val': temp_calc[1],
+                                    'to_val': temp_calc[2]
                                 }
                             )
     lst_temp.sort(key=lambda x: -x['spread_abs'])

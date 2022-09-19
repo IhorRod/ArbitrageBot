@@ -23,24 +23,34 @@ dp = Dispatcher(bot, storage=MemoryStorage())
 async def update(id) -> int:
     text_quote = "1. USDT->{}\n" \
                  "Покупка по маркету за: {}\n" \
+                 "Ссылка:{}\n" \
                  "2. {}->{}\n" \
                  "Курс обмена: {} {} на {} {}\n" \
+                 "Отдаете примерно: {} {}\n" \
+                 "Получаете примерно: {} {}\n" \
                  "Ссылка на обменник: {}\n" \
                  "3. {}->USDT\n" \
-                 "Продажа по маркету: {}\n\n" \
+                 "Продажа по маркету: {}\n" \
+                 "Ссылка:{}\n\n" \
                  "Итоговая сумма: {} USDT\n" \
                  "Процентный спред: {}%"
-    if len(list_bestchange) != 0:
-        for i in list_bestchange:
+    if len(config.list_bestchange) != 0:
+        for i in config.list_bestchange:
             await bot.send_message(id,
                                    text=text_quote.format(
                                        i['from'], i['buy'],
+                                       "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
+                                       .format(i['from']),
                                        i['from'], i['to'],
                                        i['give'], i['from'], i['get'], i['to'],
+                                       i['from_val'], i['from'],
+                                       i['to_val'], i['to'],
                                        i['link'],
                                        i['to'], i['sell'],
+                                       "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
+                                       .format(i['to']),
                                        i['spread_abs'], i['spread_proc']))
-    return len(list_bestchange)
+    return len(config.list_bestchange)
 
 
 async def updates(id):
