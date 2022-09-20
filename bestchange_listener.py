@@ -38,7 +38,6 @@ def get_cots():
     lst_temp = []
     for i in quotes:
         for j in quotes:
-            print("SMTH")
             if i != j \
                     and quotes[i][1] != 0 \
                     and quotes[j][1] != 0 \
