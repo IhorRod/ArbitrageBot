@@ -4,7 +4,7 @@ import config
 from config import *
 from bestchange_api import BestChange
 import math
-import asyncbg
+from numba import njit
 
 
 def run_bestchange():
@@ -14,20 +14,19 @@ def run_bestchange():
 async def run_bestchange1():
     await asyncio.get_event_loop().run_in_executor(None, update_cots)
 
-
-def calculate(give: float, get: float, from_cot: str, to_cot: str):
-    value = float(parameters['value'])
-    volume_from = value / quotes[from_cot][1]
+@njit(cache=True, fastmath=True)
+def calculate(value: float, give: float, get: float, from_cot: float, to_cot: float):
+    volume_from = value / from_cot
     volume_to = (volume_from / give) * get
-    value1 = volume_to * quotes[to_cot][2]
+    value1 = volume_to * to_cot
     return value1, volume_from, volume_to
 
 
 def update_cots():
     while True:
         config.list_bestchange = get_cots()
-        print(config.list_bestchange)
-        time.sleep(60)
+        if len(config.list_bestchange)>5:
+            config.list_bestchange = config.list_bestchange[:5]
 
 
 def get_cots():
@@ -56,7 +55,7 @@ def get_cots():
                             and not check \
                             and k['exchange_id'] not in exchangers_black:
 
-                        temp_calc = calculate(float(k['give']), float(k['get']), i, j)
+                        temp_calc = calculate(float(parameters['value']),float(k['give']), float(k['get']), quotes[from_cot][1], quotes[to_cot][2])
 
                         abs_diff = round(temp_calc[0], 2)
                         diff = round(((abs_diff / float(parameters['value'])) - 1) * 100, 1)
