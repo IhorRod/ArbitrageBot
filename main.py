@@ -46,7 +46,7 @@ async def update(id) -> int:
                                        i['from_val'], i['from'],
                                        i['to_val'], i['to'],
                                        i['link'],
-                                       i['to'], i['sell'],
+                                       i['to'], '{0:.10f}'.format(i['sell']),
                                        "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
                                        .format(i['to']),
                                        i['spread_abs'], i['spread_proc']))
