@@ -14,7 +14,7 @@ def run_bestchange():
 async def run_bestchange1():
     await asyncio.get_event_loop().run_in_executor(None, update_cots)
 
-@njit(cache=True, fastmath=True)
+@njit(cache=True)
 def calculate(value: float, give: float, get: float, from_cot: float, to_cot: float):
     volume_from = value / from_cot
     volume_to = (volume_from / give) * get
@@ -60,7 +60,7 @@ def get_cots():
                         abs_diff = round(temp_calc[0], 2)
                         diff = round(((abs_diff / float(parameters['value'])) - 1) * 100, 1)
                         # print(i, j, diff, abs_diff)
-                        if diff >= parameters['min_spread']:
+                        if diff >= parameters['min_spread'] and temp_calc[1]>=k['min_sum'] and temp_calc[1]<=k['max_sum']:
                             check = True
                             lst_temp.append(
                                 {
