@@ -55,7 +55,7 @@ def get_cots():
                             and not check \
                             and k['exchange_id'] not in exchangers_black:
 
-                        temp_calc = calculate(float(parameters['value']),float(k['give']), float(k['get']), quotes[from_cot][1], quotes[to_cot][2])
+                        temp_calc = calculate(float(parameters['value']),float(k['give']), float(k['get']), quotes[i][1], quotes[j][2])
 
                         abs_diff = round(temp_calc[0], 2)
                         diff = round(((abs_diff / float(parameters['value'])) - 1) * 100, 1)
