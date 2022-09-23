@@ -1,11 +1,8 @@
 import os
+import json
 API_TOKEN = os.environ.get("API_TOKEN")
-parameters = {
-    "value": 1000,
-    "min_spread": 0.5,
-    "min_good": 100,
-    "max_bad": 0
-}
+with open('config.json') as json_file:
+    parameters: dict = json.load(json_file)
 
 list_bestchange = []
 exchangers_black = {}
