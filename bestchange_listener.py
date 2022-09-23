@@ -28,6 +28,7 @@ def calculate(value: float, give: float, get: float, from_cot: float, to_cot: fl
 
 def update_cots():
     while True:
+        print("start quotes")
         config.list_bestchange = get_cots()
         if len(config.list_bestchange)>20:
             config.list_bestchange = config.list_bestchange[:20]
