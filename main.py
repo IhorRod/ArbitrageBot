@@ -1,13 +1,9 @@
 import asyncio
-import asyncbg
-import trio
 import json
-import time
 
 from aiogram.dispatcher.filters import Text
-from bestchange_api import BestChange
 
-from bestchange_listener import get_cots, run_bestchange
+from bestchange_listener import run_bestchange
 from config import *
 from aiogram import Bot, Dispatcher, executor, types
 from binance_connect import start_listening
@@ -15,9 +11,15 @@ from keyboards import *
 from States import StatesChange
 from aiogram.contrib.fsm_storage.memory import MemoryStorage
 import config
+from bestchange_exchangers import run_bestchange_exchange
 
 bot = Bot(token=API_TOKEN)
 dp = Dispatcher(bot, storage=MemoryStorage())
+
+
+def save_config():
+    with open("config.json", 'w') as f:
+        json.dump(parameters, f)
 
 
 async def update(id) -> int:
@@ -38,7 +40,7 @@ async def update(id) -> int:
         for i in config.list_bestchange:
             await bot.send_message(id,
                                    text=text_quote.format(
-                                       i['from'], '{0:.8f}'.format(i['buy']) if i['buy']<0.001 else i['buy'],
+                                       i['from'], i['buy'],
                                        "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
                                        .format(i['from']),
                                        i['from'], i['to'],
@@ -46,7 +48,7 @@ async def update(id) -> int:
                                        i['from_val'], i['from'],
                                        i['to_val'], i['to'],
                                        i['link'],
-                                       i['to'],'{0:.8f}'.format(i['sell']) if i['sell']<0.001 else i['sell'],
+                                       i['to'], i['sell'],
                                        "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
                                        .format(i['to']),
                                        i['spread_abs'], i['spread_proc']))
@@ -251,6 +253,7 @@ async def update_get1(message: types.Message):
 async def process_value_change(message: types.Message):
     parameters["value"] = int(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+    save_config()
     await state.set_state(StatesChange.STATE_EMPTY)
     await message.answer("Изменено рабочее количество валюты",
                          reply_markup=keyboard_main)
@@ -261,6 +264,7 @@ async def process_value_change(message: types.Message):
 async def process_value_change(message: types.Message):
     parameters["min_spread"] = float(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+    save_config()
     await state.set_state(StatesChange.STATE_EMPTY)
     await message.answer("Изменен требуемый минимальный спред",
                          reply_markup=keyboard_main)
@@ -271,6 +275,7 @@ async def process_value_change(message: types.Message):
 async def process_value_change(message: types.Message):
     parameters["min_good"] = int(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+    save_config()
     await state.set_state(StatesChange.STATE_EMPTY)
     await message.answer("Изменено минимальное количество хороших комментариев",
                          reply_markup=keyboard_main)
@@ -281,6 +286,7 @@ async def process_value_change(message: types.Message):
 async def process_value_change(message: types.Message):
     parameters["max_bad"] = int(message.text)
     state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+    save_config()
     await state.set_state(StatesChange.STATE_EMPTY)
     await message.answer("Изменено максимальное количество плохих комментариев",
                          reply_markup=keyboard_main)
@@ -355,17 +361,6 @@ async def echo(message: types.Message):
 if __name__ == '__main__':
     run_bestchange()
     start_listening()
+    run_bestchange_exchange()
     main()
 
-'''
-print("Start")
-    api = BestChange()
-    print("Finish")
-    temp_dict = {}
-    exchangers = api.exchangers().get()
-    for i in exchangers:
-        data = exchangers[i]
-        temp_dict[data['name']] = data['id']
-    with open("exchangers.json", 'w') as f:
-        json.dump(temp_dict, f)
-'''
