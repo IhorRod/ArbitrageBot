@@ -22,6 +22,16 @@ def save_config():
         json.dump(parameters, f)
 
 
+def save_black():
+    with open("exch_black.json", 'w') as f:
+        json.dump(exchangers_black, f)
+
+
+def save_black_exch():
+    with open("quotes_black.txt", 'w') as f:
+        f.write("\n".join(quotes_black))
+
+
 async def update(id) -> int:
     text_quote = "1. USDT->{}\n" \
                  "Покупка по маркету за: {}\n" \
@@ -300,6 +310,7 @@ async def process_addquote_read(message: types.Message):
         quotes_black.remove(quote)
         await message.answer("Криптовалюта {} убрана из ЧС".format(message.text), reply_markup=keyboard_main)
         state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+        save_black_exch()
         await state.set_state(StatesChange.STATE_EMPTY)
         await quotes_change(message)
     else:
@@ -314,6 +325,7 @@ async def process_diffquote_read(message: types.Message):
             quotes_black.append(quote)
             await message.answer("Криптовалюта {} добавлена в ЧС".format(message.text), reply_markup=keyboard_main)
             state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+            save_black_exch()
             await state.set_state(StatesChange.STATE_EMPTY)
             await quotes_change(message)
         else:
@@ -323,11 +335,12 @@ async def process_diffquote_read(message: types.Message):
 
 
 @dp.message_handler(state=StatesChange.STATE_ADD_EXCHANGER)
-async def process_addquote_read(message: types.Message):
+async def process_addexch_read(message: types.Message):
     exchanger = int(message.text)
     if exchanger in exchangers_black:
         exchangers_black.pop(exchanger)
         await message.answer("Обменник {} убран из ЧС".format(exchanger), reply_markup=keyboard_main)
+        save_black()
         state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
         await state.set_state(StatesChange.STATE_EMPTY)
         await exchangers_change(message)
@@ -336,7 +349,7 @@ async def process_addquote_read(message: types.Message):
 
 
 @dp.message_handler(state=StatesChange.STATE_DIFF_EXCHANGER)
-async def process_diffquote_read(message: types.Message):
+async def process_diffexch_read(message: types.Message):
     with open("exchangers.json", "r") as read_file:
         data: dict = json.load(read_file)
     exchanger = message.text
@@ -345,6 +358,7 @@ async def process_diffquote_read(message: types.Message):
             exchangers_black[data[exchanger]] = exchanger
             await message.answer("Обменник {} добавлен в ЧС".format(exchanger), reply_markup=keyboard_main)
             state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
+            save_black()
             await state.set_state(StatesChange.STATE_EMPTY)
             await exchangers_change(message)
         else:
@@ -363,4 +377,3 @@ if __name__ == '__main__':
     start_listening()
     run_bestchange_exchange()
     main()
-
