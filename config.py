@@ -5,8 +5,11 @@ with open('config.json') as json_file:
     parameters: dict = json.load(json_file)
 
 list_bestchange = []
-exchangers_black = {}
-quotes_black = []
+with open('exch_black.json') as json_file:
+    exchangers_black: dict = json.load(json_file)
+
+with open('quotes_black.txt') as f:
+    quotes_black: list = f.read().split("\n")
 
 quotes = {
     "LUNAUSDT": (2, 0, 0),
