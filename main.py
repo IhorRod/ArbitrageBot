@@ -375,5 +375,5 @@ async def echo(message: types.Message):
 if __name__ == '__main__':
     run_bestchange()
     start_listening()
-    run_bestchange_exchange()
+    #run_bestchange_exchange()
     main()
