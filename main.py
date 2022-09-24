@@ -50,7 +50,7 @@ async def update(id) -> int:
         for i in config.list_bestchange:
             await bot.send_message(id,
                                    text=text_quote.format(
-                                       i['from'], i['buy'],
+                                       i['from'],"{:.8f}".format(i['buy']) if i['buy']<0 else i['buy'],
                                        "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
                                        .format(i['from']),
                                        i['from'], i['to'],
@@ -58,7 +58,7 @@ async def update(id) -> int:
                                        i['from_val'], i['from'],
                                        i['to_val'], i['to'],
                                        i['link'],
-                                       i['to'], i['sell'],
+                                       i['to'], "{:.8f}".format(i['sell']) if i['sell']<0 else i['sell'],
                                        "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
                                        .format(i['to']),
                                        i['spread_abs'], i['spread_proc']))
