@@ -8,14 +8,14 @@ import numpy as np
 
 
 def run_bestchange():
-    try:
-        asyncio.Task(run_bestchange1())
-    except:
-        run_bestchange()
+    asyncio.Task(run_bestchange1())
 
 
 async def run_bestchange1():
-    await asyncio.get_event_loop().run_in_executor(None, update_cots)
+    try:
+        await asyncio.get_event_loop().run_in_executor(None, update_cots)
+    except:
+        run_bestchange()
 
 
 @njit(cache=True)
