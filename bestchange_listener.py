@@ -8,6 +8,7 @@ import numpy as np
 
 
 def run_bestchange():
+    time.sleep(10)
     asyncio.Task(run_bestchange1())
 
 
