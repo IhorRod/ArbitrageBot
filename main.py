@@ -336,7 +336,7 @@ async def process_diffquote_read(message: types.Message):
 
 @dp.message_handler(state=StatesChange.STATE_ADD_EXCHANGER)
 async def process_addexch_read(message: types.Message):
-    exchanger = int(message.text)
+    exchanger = message.text
     if exchanger in exchangers_black:
         exchangers_black.pop(exchanger)
         await message.answer("Обменник {} убран из ЧС".format(exchanger), reply_markup=keyboard_main)
