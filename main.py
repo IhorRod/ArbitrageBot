@@ -336,7 +336,7 @@ async def process_diffquote_read(message: types.Message):
 
 @dp.message_handler(state=StatesChange.STATE_ADD_EXCHANGER)
 async def process_addexch_read(message: types.Message):
-    exchanger = message.text
+    exchanger = int(message.text)
     if exchanger in exchangers_black:
         exchangers_black.pop(exchanger)
         await message.answer("Обменник {} убран из ЧС".format(exchanger), reply_markup=keyboard_main)
@@ -354,8 +354,8 @@ async def process_diffexch_read(message: types.Message):
         data: dict = json.load(read_file)
     exchanger = message.text
     if data.get(exchanger) != -1:
-        if data[exchanger] not in exchangers_black:
-            exchangers_black[data[exchanger]] = exchanger
+        if int(data[exchanger]) not in exchangers_black:
+            exchangers_black[int(data[exchanger])] = exchanger
             await message.answer("Обменник {} добавлен в ЧС".format(exchanger), reply_markup=keyboard_main)
             state = dp.current_state(chat=message.chat.id, user=message.from_user.id)
             save_black()
