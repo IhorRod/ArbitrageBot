@@ -6,6 +6,7 @@ from bestchange_api import BestChange
 from numba import njit
 import numpy as np
 import traceback
+import json
 
 
 def run_bestchange():
@@ -72,9 +73,9 @@ def get_cots():
                             check = True
                             with open("exchangers.json", "r") as read_file:
                                 exchangers_names: dict = json.load(read_file)
-                            for i in exchangers_names:
-                                if int(exchangers_names[i]) == k["exchange_id"]:
-                                    exch_name: str = i
+                            for f in exchangers_names:
+                                if int(exchangers_names[f]) == k["exchange_id"]:
+                                    exch_name: str = f
                             lst_temp.append(
                                 {
                                     'from': i[:-4],
