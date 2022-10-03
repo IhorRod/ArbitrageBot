@@ -40,6 +40,7 @@ async def update(id) -> int:
                  "Курс обмена: {} {} на {} {}\n" \
                  "Отдаете примерно: {} {}\n" \
                  "Получаете примерно: {} {}\n" \
+                 "Название обменника: {} {}\n" \
                  "Ссылка на обменник: {}\n" \
                  "3. {}->USDT\n" \
                  "Продажа по маркету: {}\n" \
@@ -57,7 +58,7 @@ async def update(id) -> int:
                                        i['give'], i['from'], i['get'], i['to'],
                                        i['from_val'], i['from'],
                                        i['to_val'], i['to'],
-                                       i['link'],
+                                       i['exch_name'],i['link'],
                                        i['to'], "{:.8f}".format(i['sell']) if i['sell']<0.0001 else i['sell'],
                                        "https://www.binance.com/ru-UA/trade/{}_USDT?theme=dark&type=spot"
                                        .format(i['to']),
