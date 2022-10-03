@@ -5,7 +5,7 @@ from config import *
 async def main():
     while True:
         client = await AsyncClient.create()
-        bm = BinanceSocketManager(client)
+        bm = BinanceSocketManager(client, user_timeout=5)
         ts = bm.book_ticker_socket()
 
         async with ts as tscm:
