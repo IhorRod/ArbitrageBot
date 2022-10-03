@@ -68,6 +68,11 @@ def get_cots():
                         # print(i, j, diff, abs_diff)
                         if diff >= parameters['min_spread'] and temp_calc[1]>=k['min_sum'] and temp_calc[1]<=k['max_sum']:
                             check = True
+                            with open("exchangers.json", "r") as read_file:
+                                exchangers_names: dict = json.load(read_file)
+                            for i in exchangers_names:
+                                if int(exchangers_names[i]) == k["exchange_id"]:
+                                    exch_name: str = i
                             lst_temp.append(
                                 {
                                     'from': i[:-4],
@@ -81,7 +86,8 @@ def get_cots():
                                     'give': k['give'],
                                     'get': k['get'],
                                     'from_val': temp_calc[1],
-                                    'to_val': temp_calc[2]
+                                    'to_val': temp_calc[2],
+                                    'exch_name': exch_name
                                 }
                             )
 
