@@ -5,6 +5,7 @@ from config import *
 from bestchange_api import BestChange
 from numba import njit
 import numpy as np
+import traceback
 
 
 def run_bestchange():
@@ -15,8 +16,8 @@ def run_bestchange():
 async def run_bestchange1():
     try:
         await asyncio.get_event_loop().run_in_executor(None, update_cots)
-    except Exception as e:
-        print(e)
+    except Exception:
+        traceback.print_exc()
         run_bestchange()
 
 
