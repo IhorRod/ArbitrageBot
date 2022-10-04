@@ -13,7 +13,7 @@ with open('exch_black.json') as json_file:
 
 with open('quotes_black.txt') as f:
     quotes_black: list = f.read().split("\n")
-
+IDS = [489124710, 1216349318]
 quotes = {
     "LUNAUSDT": (2, 0, 0),
     "OMGUSDT": (48, 0, 0),
