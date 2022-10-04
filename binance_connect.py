@@ -13,7 +13,6 @@ async def main():
                 res = await tscm.recv()
                 if res['s'] in quotes:
                     quotes[res['s']] = (quotes[res['s']][0], float(res['b']), float(res['a']))
-                    print(res)
 
 
 def start_listening():
