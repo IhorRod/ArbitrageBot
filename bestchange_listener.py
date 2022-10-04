@@ -18,7 +18,6 @@ async def run_bestchange1():
     try:
         await asyncio.get_event_loop().run_in_executor(None, update_cots)
     except:
-        traceback.print_exc()
         run_bestchange()
 
 
